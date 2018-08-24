@@ -3,6 +3,8 @@
 
 ### A simple note taker built with Electron & Vue.js
 
+![Main](/screenshots/main.png)
+
 ## Contributing
 
 Follow this [guide](CONTRIBUTING.md)
