@@ -1,4 +1,5 @@
-# Note Taker
+<p align="center"><img src="/build/icons/icon.png" alt="Note Taker" width="100px"/></p>
+<h1 align="center">Note Taker</h1>
 
 ### A simple note taker built with Electron & Vue.js
 
@@ -29,3 +30,6 @@ npm run lint
 - Vuetify
 - nedb
 - vue-i18n
+
+## Inspiration
+[code-notes by @lauthieb](https://github.com/lauthieb/code-notes)
