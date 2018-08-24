@@ -1,0 +1,27 @@
+{
+  "app": {
+    "add_note": "Add Note",
+    "cancel": "Cancel",
+    "close": "close",
+    "edit": "Edit",
+    "delete": "Delete",
+    "dark_theme": "Dark Theme",
+    "loading": "Loading",
+    "nothing": "It's quiet here. Too quiet...",
+    "save": "Save",
+    "title": "Note Taker",
+    "no_note_found": "No note found"
+  },
+  "dialog": {
+    "delete_message": "Delete this note?",
+    "delete_title": "Delete Note"
+  },
+  "general": {
+    "categories": "Categories",
+    "content": "Content",
+    "display": "Display",
+    "search": "Search",
+    "title": "Title",
+    "name": "Name"
+  }
+}

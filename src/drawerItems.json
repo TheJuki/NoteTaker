@@ -1,0 +1,9 @@
+[
+  { "icon": "home", "text": "All Notes" },
+  {
+    "icon": "keyboard_arrow_up",
+    "icon-alt": "keyboard_arrow_down",
+    "text": "Categories",
+    "children": true
+  }
+]
