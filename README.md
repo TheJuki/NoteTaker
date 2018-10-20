@@ -16,10 +16,10 @@ Follow this [guide](CONTRIBUTING.md)
 npm install or yarn
 
 # serve with hot reload at localhost:8080
-npm run serve:electron 
+npm run electron:serve
 
 # build electron application for production
-npm run build:electron
+npm run electron:build
 
 # lint all JS/Vue component files in `src/`
 npm run lint
