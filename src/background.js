@@ -18,7 +18,6 @@ function createMainWindow () {
   const window = new BrowserWindow({
     useContentSize: true,
     height: 700,
-    titleBarStyle: 'hiddenInset',
     width: 1160
   })
 
