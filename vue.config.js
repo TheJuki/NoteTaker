@@ -1,6 +1,7 @@
 module.exports = {
   pluginOptions: {
     electronBuilder: {
+      externals: ['nedb'],
       builderOptions: {
         nsis: {
           oneClick: false,
