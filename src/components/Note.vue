@@ -47,12 +47,7 @@ export default {
       noteDialog: false,
       deleteDialog: false,
       copySnackbar: false,
-      copySnackbarText: '',
-      categories: [
-        { text: "Comment", value: "Comment" },
-        { text: "Server", value: "Server" },
-        { text: "Database", value: "Database" }
-      ],
+      copySnackbarText: ''
     }
   },
   mounted() {},
