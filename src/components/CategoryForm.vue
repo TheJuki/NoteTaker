@@ -11,7 +11,7 @@
                   v-text-field(v-model='model.name' ref="name" :label="$t('general.name')" required :rules="[rules.required]")
           v-card-actions
             v-spacer
-            v-btn(flat color='error' @click.native="cancel") {{ $t('app.cancel') }}
+            v-btn(text color='error' @click.native="cancel") {{ $t('app.cancel') }}
             v-btn(depressed color='info' @click.stop="save" :disabled="!valid" :loading="saving") {{ $t('app.save') }}
 </template>
 

@@ -13,12 +13,21 @@ const isDevelopment = process.env.NODE_ENV !== 'production'
 let mainWindow
 
 // Standard scheme must be registered before the app is ready
-protocol.registerStandardSchemes(['app'], { secure: true })
+protocol.registerSchemesAsPrivileged([{
+  scheme: 'app', privileges: {
+    standard: true,
+    secure: true,
+    supportFetchAPI: true
+  },
+}])
 function createMainWindow () {
   const window = new BrowserWindow({
     useContentSize: true,
     height: 700,
-    width: 1160
+    width: 1160,
+    webPreferences: {
+      nodeIntegration: true
+    }
   })
 
   if (isDevelopment) {

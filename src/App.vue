@@ -11,57 +11,45 @@
             v-flex(xs6)
               v-subheader(v-if='item.heading')
                 | {{ item.heading }}
-          v-list-group(v-else-if='item.children' :key='item.text' :prepend-icon="item.model ? item.icon : item['icon-alt']"
-                      append-icon value="true")
-            v-list-tile(slot='activator')
-              v-list-tile-content
-                v-list-tile-title
-                  | {{ item.text }}
-              v-list-tile-action
-                v-btn(flat icon color='primary' @click.stop='categoryId = null; categoryDialog = true')
-                  v-icon add
-            v-list-tile(v-for='(category, i) in categoriesSorted' :key='i' @click='selectCategoryDrawer(category.name)' :class="{ active: categorySelected === category.name }")
-              v-list-tile-action
+          v-list-group(v-else-if='item.children' :key='item.text' value="true")
+            template(v-slot:activator)
+              v-list-item-content
+                v-list-item-title {{ item.text }}
+            v-list-item(v-for='(category, i) in categoriesSorted' :key='i' @click='selectCategoryDrawer(category.name)' :class="{ active: categorySelected === category.name }")
+              v-list-item-action
                 v-icon(:class="{ active: categorySelected === category.name }")
                   | dashboard
-              v-list-tile-content
-                v-list-tile-title
+              v-list-item-content
+                v-list-item-title
                   | {{ category.name }}
-              v-list-tile-action
+              v-list-item-action
                 v-menu(bottom right)
-                  v-btn(flat icon slot='activator' color='grey')
-                    v-icon more_vert
+                  template(v-slot:activator="{ on }")
+                    v-btn(text icon v-on="on" color='grey')
+                      v-icon more_vert
                   v-list
-                    v-list-tile(@click='categoryId = category._id; categoryDialog = true')
-                      v-list-tile-title {{ $t('app.edit') }}
-                    v-list-tile(@click='deleteCategory(category)')
-                      v-list-tile-title {{ $t('app.delete') }}
-          v-list-tile(v-else @click='selectCategoryDrawer("all")' :class="{ active: categorySelected === 'all' }" :key='item.text')
-            v-list-tile-action
+                    v-list-item(@click='categoryId = category._id; categoryDialog = true')
+                      v-list-item-title {{ $t('app.edit') }}
+                    v-list-item(@click='deleteCategory(category)')
+                      v-list-item-title {{ $t('app.delete') }}
+          v-list-item(v-else @click='selectCategoryDrawer("all")' :class="{ active: categorySelected === 'all' }" :key='item.text')
+            v-list-item-action
               v-icon(:class="{ active: categorySelected === 'all' }") all_inclusive
-            v-list-tile-content
-              v-list-tile-title
+            v-list-item-content
+              v-list-item-title
                 | All
-    v-toolbar.top-toolbar(color='blue darken-3' dark app :clipped-left='$vuetify.breakpoint.lgAndUp' fixed v-shortkey.once="['ctrl', 'f']" @shortkey="$refs.search.focus()")
-      v-toolbar-side-icon(@click.stop='drawer = !drawer')
+            v-list-item-action
+                v-btn(text icon color='primary' @click.stop='categoryId = null; categoryDialog = true')
+                  v-icon add
+    v-app-bar.top-app-bar(color='blue darken-3' dark app :clipped-left='$vuetify.breakpoint.lgAndUp' fixed v-shortkey.once="['ctrl', 'f']" @shortkey="$refs.search.focus()")
+      v-app-bar-nav-icon(@click.stop='drawer = !drawer')
       v-toolbar-title.ml-0.pl-3(style="width: 200px")
         img.logo(src="@/assets/logo.svg" alt="logo")
         span(style="cursor: default") {{ $t('app.title') }}
-      v-text-field(flat solo-inverted hide-details prepend-inner-icon='search' ref="search" v-model="searchNotes" :label="$t('general.search')" clearable)
+      v-text-field(dark color='primary' solo-inverted hide-details prepend-inner-icon='search' ref="search" v-model="searchNotes" :label="$t('general.search')" clearable)
 
-      v-btn.add-btn(fab dark small color="primary" @click='noteDialog = true')
+      v-btn.add-btn(fab dark small color="primary" style="margin-left:10px" @click='noteDialog = true')
         v-icon(dark) add
-      v-spacer
-      v-menu(offset-y bottom min-width="300px")
-          v-btn(icon slot="activator")
-            v-icon(large) account_circle
-          v-card
-            v-list
-              v-list-tile
-                v-list-tile-action
-                  v-icon brightness_2
-                v-list-tile-action
-                  v-switch(v-model="darkThemeToggle" :label="$t('app.dark_theme')")
     v-content
       router-view.view
 </template>
@@ -157,7 +145,7 @@ export default {
   color: #1976d2 !important;
 }
 
-.top-toolbar {
+.top-app-bar {
   -webkit-app-region: drag;
   user-select: none;
 }

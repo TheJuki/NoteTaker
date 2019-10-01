@@ -6,8 +6,8 @@
         v-card-text {{ description }}
         v-card-actions
           v-spacer
-          v-btn(:color="btn1.color" v-if="btn1.visible" flat="flat" @click.native="btn1Event") {{ btn1.text }}
-          v-btn(:color="btn2.color" v-if="btn2.visible" flat="flat" @click.native="btn2Event") {{ btn2.text }}
+          v-btn(:color="btn1.color" v-if="btn1.visible" text @click.native="btn1Event") {{ btn1.text }}
+          v-btn(:color="btn2.color" v-if="btn2.visible" text @click.native="btn2Event") {{ btn2.text }}
 </template>
 
 <script>

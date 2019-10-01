@@ -1,6 +1,6 @@
 <template lang="pug">
   div
-    v-dialog(v-model="showDialog" max-width="550" :persistent="true")
+    v-dialog(v-model="showDialog" max-width="550" scrollable :persistent="true")
       v-form(v-model="valid" ref="form" lazy-validation)
         v-card
           v-card-title.headline {{ title }}
@@ -12,14 +12,14 @@
               v-layout(row)
                 v-flex(xs12)
                   v-autocomplete(:items="categories" cache-items v-model="model.categories" :label="$t('general.categories')" item-text="name" item-value="name" clearable multiple chips)
-                    template(slot='selection' slot-scope='data')
-                      v-chip(:selected='data.selected' close @input='data.parent.selectItem(data.item.name)' color='primary' text-color='white') {{ data.item.name }}
+                    template(v-slot:selection="data")
+                      v-chip(:input-value='data.selected' close @input='data.parent.selectItem(data.item.name)' color='primary' text-color='white' @click:close="remove(data.item)") {{ data.item.name }}
               v-layout(row)
                 v-flex(xs12)
                   v-textarea(v-model='model.content' auto-grow :label="$t('general.content')" required :rules="[rules.required]")
           v-card-actions
             v-spacer
-            v-btn(flat color='error' @click.native="cancel") {{ $t('app.cancel') }}
+            v-btn(text color='error' @click.native="cancel") {{ $t('app.cancel') }}
             v-btn(depressed color='info' @click.stop="save" :disabled="!valid" :loading="saving") {{ $t('app.save') }}
 </template>
 
@@ -89,7 +89,11 @@ export default {
     },
     cancel() {
       this.$emit("hideDialog")
-    }
+    },
+    remove (item) {
+      const index = this.model.categories.indexOf(item.name)
+      if (index >= 0) this.model.categories.splice(index, 1)
+    },
   }
 }
 </script>
