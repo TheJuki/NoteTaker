@@ -15,7 +15,7 @@
     "@vitejs/plugin-vue": "^2.3.3",
     "@vue/cli-plugin-vuex": "~5.0.0",
     "@vueuse/core": "^8.7.5",
-    "electron": "^19.0.3",
+    "electron": "^20.0.1",
     "electron-builder": "^23.0.3",
     "roboto-fontface": "0.10.0",
     "typescript": "^4.7.3",
