@@ -1,99 +1,139 @@
-<template lang="pug">
-  div
-    v-dialog(v-model="showDialog" max-width="550" scrollable :persistent="true")
-      v-form(v-model="valid" ref="form" lazy-validation)
-        v-card
-          v-card-title.headline {{ title }}
-          v-card-text
-            v-container
-              v-layout(row)
-                v-flex(xs12)
-                  v-text-field(v-model='model.title' ref="title" :label="$t('general.title')" required :rules="[rules.required]")
-              v-layout(row)
-                v-flex(xs12)
-                  v-autocomplete(:items="categories" cache-items v-model="model.categories" :label="$t('general.categories')" item-text="name" item-value="name" clearable multiple chips)
-                    template(v-slot:selection="data")
-                      v-chip(:input-value='data.selected' close @input='data.parent.selectItem(data.item.name)' color='primary' text-color='white' @click:close="remove(data.item)") {{ data.item.name }}
-              v-layout(row)
-                v-flex(xs12)
-                  v-textarea(v-model='model.content' auto-grow :label="$t('general.content')" required :rules="[rules.required]")
-          v-card-actions
-            v-spacer
-            v-btn(text color='error' @click.native="cancel") {{ $t('app.cancel') }}
-            v-btn(depressed color='info' @click.stop="save" :disabled="!valid" :loading="saving") {{ $t('app.save') }}
+<template>
+  <div>
+    <v-dialog v-model="showDialog" :scrollable="true" :persistent="true">
+      <v-form v-model="valid" style="width: 550px" ref="form" :lazy-validation="true">
+        <v-card>
+          <v-card-title class="headline">{{ title }}</v-card-title>
+          <v-card-text>
+            <v-container>
+              <v-row>
+                <v-col cols="12">
+                  <v-text-field v-model="model.title" v-focus :label="t('general.title')" required="required" :rules="rules"></v-text-field>
+               </v-col>
+              </v-row>
+              <v-row>
+                <v-col cols="12">
+                  <v-autocomplete :items="categories" v-model="model.categories" :label="t('general.categories')" itemTitle="name" itemValue="name" :clearable="true" :multiple="true" :chips="true">
+                    <template v-slot:chip="{ props, item } : { props: any, item: any }">
+                      <v-chip
+                        v-bind="props"
+                        :closable="true"
+                        :text="item.raw.name"
+                        color="primary" 
+                        text-color="white"
+                      ></v-chip>
+                    </template>
+                  </v-autocomplete>
+                </v-col>
+               </v-row>
+               <v-row>
+                <v-col cols="12">
+                  <v-textarea v-model="model.content" :auto-grow="true" :label="t('general.content')" required="required" :rules="rules"></v-textarea>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn text="text" color="error" @click.native="cancel">{{ t('app.cancel') }}</v-btn>
+            <v-btn depressed="depressed" color="info" @click.stop="save" :disabled="!valid" :loading="saving">{{ t('app.save') }}</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-form>
+    </v-dialog>
+  </div>
 </template>
 
-<script>
-import { mapGetters, mapActions } from "vuex"
+<script setup lang="ts">
+import { Category } from '../models/Category';
+import { Note } from '../models/Note';
+import { ref, reactive, computed, onMounted, VueElement } from 'vue'
+import { useStore } from '../store'
+import { useI18n } from 'vue-i18n'
 
-export default {
-  props: {
-    showDialog: {
-      type: Boolean,
-      default: false
-    },
-    noteId: {
-      type: String,
-      default: null
-    }
-  },
-  data: function() {
-    return {
-      loaded: false,
-      saving: false,
-      valid: true,
-      title: "New Note",
-      model: {},
-      rules: {
-        required: value => !!value || "Required"
-      }
-    }
-  },
-  computed: {
-    ...mapGetters(['noteById', 'categories'])
-  },
-  mounted() {
-    if (this.noteId == null) {
-      this.model = {}
-      this.model.action = "New"
+const { t } = useI18n()
+
+const store = useStore()
+
+const props = defineProps<{
+  showDialog?: boolean
+  noteId?: string
+}>()
+
+const emit = defineEmits(['hideDialog'])
+
+const form = ref<HTMLFormElement>()
+const loaded = ref(false)
+const saving = ref(false)
+const valid = ref(true)
+const action = ref("New")
+const title = ref("New Note")
+const model = reactive<Note>({
+  _id: undefined,
+  title: '',
+  content: '',
+  categories: [],
+  createdDate: new Date(),
+  updatedDate: new Date()
+})
+
+const rules = computed(() => {
+  const rules = []
+  const rule =
+      (v: string) => !!v || 'Required'
+
+  rules.push(rule)
+  return rules;
+})
+
+const categories = computed(() => {
+  return store.state.categories;
+})
+
+const vFocus = {
+  mounted: (el: VueElement) => el.focus()
+}
+
+onMounted(() => {
+  if (props.noteId == null) {
+    Object.assign(model, {})
+    action.value = "New"
+  } else {
+    Object.assign(model, store.getters.noteById(props.noteId))
+    action.value = "Update"
+    title.value = "Update Note"
+  }
+})
+
+const save = () => {
+  model.title = model.title.trim()
+  model.content = model.content.trim()
+
+  if (form.value && form.value.validate()) {
+    saving.value = true
+
+    if (action.value === "New") {
+      model.createdDate = new Date()
+      model.updatedDate = new Date()
+      store.dispatch('addNote', model).then(() => {
+        emit("hideDialog")
+      })
     } else {
-      this.model = Object.assign({}, this.noteById(this.noteId))
-      this.model.action = "Update"
-      this.title = "Update Note"
+      model.updatedDate = new Date()
+      store.dispatch('updateNote', model).then(() => {
+        emit("hideDialog")
+      })
     }
-
-    this.$refs.title.focus()
-  },
-  methods: {
-    ...mapActions(["addNote", "updateNote"]),
-    save() {
-      this.model.title = this.model.title.trim()
-      this.model.content = this.model.content.trim()
-
-      if (this.$refs.form.validate()) {
-        this.saving = true
-
-        if (this.model.action === "New") {
-          this.model.createdDate = new Date()
-          this.model.updatedDate = new Date()
-          this.addNote(this.model).then(() => {
-            this.$emit("hideDialog")
-          })
-        } else {
-          this.model.updatedDate = new Date()
-          this.updateNote(this.model).then(() => {
-            this.$emit("hideDialog")
-          })
-        }
-      }
-    },
-    cancel() {
-      this.$emit("hideDialog")
-    },
-    remove (item) {
-      const index = this.model.categories.indexOf(item.name)
-      if (index >= 0) this.model.categories.splice(index, 1)
-    },
   }
 }
+
+const cancel = () => {
+  emit("hideDialog")
+}
+
+const remove = (item: Category) => {
+  const index = model.categories.indexOf(item.name)
+  if (index >= 0) model.categories.splice(index, 1)
+}
+
 </script>

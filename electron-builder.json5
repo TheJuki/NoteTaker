@@ -1,0 +1,39 @@
+/**
+ * @see https://www.electron.build/configuration/configuration
+ */
+{
+  "appId": "com.github.thejuki.notetaker",
+  "productName": "Note Taker",
+  "asar": true,
+  "directories": {
+    "output": "release/${version}"
+  },
+  "files": [
+    "dist"
+  ],
+  "mac": {
+    "artifactName": "${productName}.${ext}",
+    "target": [
+      "dmg"
+    ],
+    "icon": "./build/icons/icon.icns"
+  },
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": [
+          "x64"
+        ]
+      }
+    ],
+    "artifactName": "${productName}.${ext}",
+    "icon": "./build/icons/icon.png"
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true,
+    "deleteAppDataOnUninstall": false
+  }
+}

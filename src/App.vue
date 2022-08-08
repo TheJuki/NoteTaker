@@ -1,164 +1,188 @@
-<!-- Main App View -->
-<!-- Contains navigation drawer and header wrapper around content-->
-<template lang="pug">
-  v-app(:dark="darkTheme")
-    category-form(:showDialog="categoryDialog" v-on:hideDialog="categoryDialog = false" :categoryId="categoryId" v-if="categoryDialog")
-    note-form(:showDialog="noteDialog" v-on:hideDialog="noteDialog = false" v-if="noteDialog")
-    v-navigation-drawer(fixed :clipped='$vuetify.breakpoint.lgAndUp' app v-model='drawer')
-      v-list(dense)
-        template(v-for='item in this.$options.drawerItems')
-          v-layout(row v-if='item.heading' align-center :key='item.heading')
-            v-flex(xs6)
-              v-subheader(v-if='item.heading')
-                | {{ item.heading }}
-          v-list-group(v-else-if='item.children' :key='item.text' value="true")
-            template(v-slot:activator)
-              v-list-item-content
-                v-list-item-title {{ item.text }}
-            v-list-item(v-for='(category, i) in categoriesSorted' :key='i' @click='selectCategoryDrawer(category.name)' :class="{ active: categorySelected === category.name }")
-              v-list-item-action
-                v-icon(:class="{ active: categorySelected === category.name }")
-                  | dashboard
-              v-list-item-content
-                v-list-item-title
-                  | {{ category.name }}
-              v-list-item-action
-                v-menu(bottom right)
-                  template(v-slot:activator="{ on }")
-                    v-btn(text icon v-on="on" color='grey')
-                      v-icon more_vert
-                  v-list
-                    v-list-item(@click='categoryId = category._id; categoryDialog = true')
-                      v-list-item-title {{ $t('app.edit') }}
-                    v-list-item(@click='deleteCategory(category)')
-                      v-list-item-title {{ $t('app.delete') }}
-          v-list-item(v-else @click='selectCategoryDrawer("all")' :class="{ active: categorySelected === 'all' }" :key='item.text')
-            v-list-item-action
-              v-icon(:class="{ active: categorySelected === 'all' }") all_inclusive
-            v-list-item-content
-              v-list-item-title
-                | All
-            v-list-item-action
-                v-btn(text icon color='primary' @click.stop='categoryId = null; categoryDialog = true')
-                  v-icon add
-    v-app-bar.top-app-bar(color='blue darken-3' dark app :clipped-left='$vuetify.breakpoint.lgAndUp' fixed v-shortkey.once="['ctrl', 'f']" @shortkey="$refs.search.focus()")
-      v-app-bar-nav-icon(@click.stop='drawer = !drawer')
-      v-toolbar-title.ml-0.pl-3(style="width: 200px")
-        img.logo(src="@/assets/logo.svg" alt="logo")
-        span(style="cursor: default") {{ $t('app.title') }}
-      v-text-field(dark color='primary' solo-inverted hide-details prepend-inner-icon='search' ref="search" v-model="searchNotes" :label="$t('general.search')" clearable)
-
-      v-btn.add-btn(fab dark small color="primary" style="margin-left:10px" @click='noteDialog = true')
-        v-icon(dark) add
-    v-content
-      router-view.view
+<template>
+  <v-app :dark="darkTheme">
+    <CategoryForm :showDialog="categoryDialog" v-on:hideDialog="categoryDialog = false" :categoryId="categoryId" v-if="categoryDialog"></CategoryForm>
+    <NoteForm :noteId="undefined" :showDialog="noteDialog" v-on:hideDialog="noteDialog = false" v-if="noteDialog"></NoteForm>
+    <v-navigation-drawer fixed="fixed" app="app" v-model="drawer">
+      <v-list dense="dense">
+        <template v-for="item in drawerItems" :key="item.text">
+          <v-list-group v-if="item.children" >
+            <template v-slot:activator>
+              <v-list-item :title="item.text"></v-list-item>
+            </template>
+          </v-list-group>
+          <v-list-item v-if="item.children" v-for="(category, i) in categoriesSorted" :key="i" @click="selectCategoryDrawer(category.name)" :class="{ active: categorySelected === category.name }">
+            <v-list-item-action>
+              <v-icon :class="{ active: categorySelected === category.name }" icon="mdi-dashboard"></v-icon>
+            </v-list-item-action>
+            <v-list-item-title>{{ category.name }}</v-list-item-title>
+            <v-spacer></v-spacer>
+            <v-list-item-action>
+              <v-btn icon style="color: white !important" color="grey">
+                <v-icon icon="mdi-menu"></v-icon>
+                <v-menu activator="parent">
+                  <v-list>
+                    <v-list-item @click="categoryId = category._id; categoryDialog = true">
+                      <v-list-item-title>{{ t('app.edit') }}</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item @click="deleteCategory(category)">
+                      <v-list-item-title>{{ t('app.delete') }}</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+              </v-btn>
+            </v-list-item-action>
+          </v-list-item>
+          <v-list-item v-else @click="selectCategoryDrawer('all')" :class="{ active: categorySelected === 'all' }">
+            <v-list-item-action>
+              <v-icon :class="{ active: categorySelected === 'all' }" icon="mdi-all-inclusive"></v-icon>
+            </v-list-item-action>
+            <v-list-item-title>All</v-list-item-title>
+            <v-spacer></v-spacer>
+            <v-list-item-action>
+              <v-btn icon="mdi-plus" color="primary" @click.stop="categoryId = undefined; categoryDialog = true">
+              </v-btn>
+            </v-list-item-action>
+          </v-list-item>
+        </template>
+      </v-list>
+    </v-navigation-drawer>
+    <v-app-bar class="top-app-bar" color="blue darken-3">
+      <v-app-bar-nav-icon style="color: white" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+      <v-toolbar-title class="ml-0 pl-3" style="width: 200px; color: white"><img class="logo" src="./assets/logo.svg" alt="logo"/><span style="cursor: default">{{ t('app.title') }}</span></v-toolbar-title>
+      <v-text-field color="primary" style="color: white" :hide-details="true" prepend-inner-icon="mdi-search" v-focus ref="search" v-model="searchNotes" :label="t('general.search')" :clearable="true"></v-text-field>
+      <v-btn icon="mdi-plus" color="primary" variant="flat" style="margin-left:10px" @click="noteDialog = true"></v-btn>
+    </v-app-bar>
+    <v-main>
+      <Home></Home>
+    </v-main>
+  </v-app>
 </template>
 
-<script>
-import { mapGetters, mapActions } from 'vuex'
+<script setup lang="ts">
+import { ref, watch, computed, onMounted, VueElement } from 'vue'
+import { useStore } from './store'
+import { useMagicKeys } from '@vueuse/core'
 import DrawerItemsConfig from './drawerItems.json'
 import CategoryForm from "./components/CategoryForm.vue"
 import NoteForm from "./components/NoteForm.vue"
+import { Category } from './models/Category'
+import Home from './components/Home.vue'
+import { useI18n } from 'vue-i18n'
 
-export default {
-  components: {
-    CategoryForm,
-    NoteForm
-  },
-  drawerItems: DrawerItemsConfig,
-  name: "App",
-  data: () => ({
-    darkThemeToggle: false,
-    drawer: null,
-    categoryDialog: false,
-    categoryId: null,
-    searchNotes: "",
-    noteDialog: false
-  }),
-  methods: {
-    ...mapActions(['selectCategory', 'deleteCategory', 'loadCategories']),
-    selectCategoryDrawer(category) {
-      this.selectCategory(category)
-    },
-  },
-  computed: {
-    ...mapGetters(['darkTheme', 'categorySelected', 'categories']),
-    categoriesSorted() {
-      let safeCategories = []
-      if(this.categories != null) {
-        safeCategories = this.categories
-      }
+const { t } = useI18n()
 
-      return safeCategories.slice().sort(function(a, b) {
-        const nameA = a.name.toUpperCase()
-        const nameB = b.name.toUpperCase()
-        if (nameA < nameB) {
-          return -1
-        }
-        if (nameA > nameB) {
-          return 1
-        }
+const store = useStore()
 
-        return 0
-     })
-    }
-  },
-  watch: {
-    darkThemeToggle(val) {
-      localStorage.setItem('darkTheme', val)
-      this.$store.dispatch('THEME', { theme: val })
-    },
-    searchNotes(val) {
-      this.$store.dispatch('SEARCH', { search: val })
-    }
-  },
-  mounted() {
-    this.$refs.search.focus()
+const keys = useMagicKeys()
+const ctrlF = keys['Ctrl+F']
 
-    this.loadCategories()
+const drawerItems = computed(() => {
+  return DrawerItemsConfig;
+})
 
-    if(localStorage.getItem('darkTheme'))
-    {
-      this.$store.dispatch('THEME', { theme: localStorage.getItem('darkTheme') === 'true' })
-        .then(() => {
-          this.darkThemeToggle = this.$store.state.darkTheme
-      })
-    }
-  }
+const darkTheme = computed(() => {
+  return store.state.darkTheme;
+})
+
+const categorySelected = computed(() => {
+  return store.state.categorySelected;
+})
+
+const search = ref<VueElement>()
+const darkThemeToggle = ref(false)
+const drawer = ref(false)
+const categoryDialog = ref(false)
+const categoryId = ref<string | undefined>(undefined)
+const searchNotes = ref('')
+const noteDialog = ref(false)
+
+const vFocus = {
+  mounted: (el: VueElement) => el.focus()
 }
+
+onMounted(() => {
+  store.dispatch('loadCategories')
+  if(localStorage.getItem('darkTheme'))
+  {
+    store.dispatch('THEME', { theme: localStorage.getItem('darkTheme') === 'true' })
+      .then(() => {
+        darkThemeToggle.value = store.state.darkTheme
+    })
+  }
+})
+
+const selectCategoryDrawer = (category: string) => {
+  store.dispatch('selectCategory', category)
+}
+
+const deleteCategory = (category: Category) => {
+  store.dispatch('deleteCategory', category)
+}
+
+const categories = computed(() => {
+  return store.state.categories;
+})
+
+const categoriesSorted = computed(() => {
+  let safeCategories: Category[] = []
+  if(categories.value != null) {
+    safeCategories = categories.value
+  }
+  return safeCategories.slice().sort(function(a, b) {
+    const nameA = a.name.toUpperCase()
+    const nameB = b.name.toUpperCase()
+    if (nameA < nameB) {
+      return -1
+    }
+    if (nameA > nameB) {
+      return 1
+    }
+    return 0
+  })
+})
+
+watch(ctrlF, (val) => {
+  if (val && search.value) {
+    search.value.focus()
+  }
+})
+
+watch(darkThemeToggle, async (val, _) => {
+  localStorage.setItem('darkTheme', val.toString())
+  store.dispatch('THEME', { theme: val })
+})
+
+watch(searchNotes, async (val, _) => {
+  store.dispatch('SEARCH', { search: val })
+})
+  
 </script>
 
-<style lang="stylus">
+<style>
 .logo {
   width: 35px;
   margin-right: 10px;
   margin-left: 10px;
   display: inline-block;
   vertical-align: middle;
-  user-drag: none;
   user-select: none;
   -webkit-user-drag: none;
   -webkit-user-select: none;
 }
-
 .active {
   color: #1976d2 !important;
 }
-
 .top-app-bar {
   -webkit-app-region: drag;
   user-select: none;
 }
-
 html {
   --thumb-size: 16px;
 }
-
 ::-webkit-scrollbar {
   width: var(--thumb-size);
   height: var(--thumb-size);
 }
-
 ::-webkit-scrollbar-thumb {
   background-color: #cccccc;
   border-radius: calc((var(--thumb-size) / 2));

@@ -1,85 +1,104 @@
-<template lang="pug">
-  div
-    v-dialog(v-model="showDialog" max-width="550" :persistent="true")
-      v-form(v-model="valid" ref="form" lazy-validation)
-        v-card
-          v-card-title.headline {{ title }}
-          v-card-text
-            v-container
-              v-layout(row)
-                v-flex(xs12)
-                  v-text-field(v-model='model.name' ref="name" :label="$t('general.name')" required :rules="[rules.required]")
-          v-card-actions
-            v-spacer
-            v-btn(text color='error' @click.native="cancel") {{ $t('app.cancel') }}
-            v-btn(depressed color='info' @click.stop="save" :disabled="!valid" :loading="saving") {{ $t('app.save') }}
+<template>
+  <div>
+    <v-dialog v-model="showDialog" :persistent="true">
+      <v-form v-model="valid" style="width: 550px" ref="form" :lazy-validation="true">
+        <v-card>
+          <v-card-title class="headline">{{ title }}</v-card-title>
+          <v-card-text>
+            <v-container>
+              <v-row>
+                <v-col cols="12">
+                  <v-text-field v-model="model.name" v-focus :label="t('general.name')" required="required" :rules="rules"></v-text-field>
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn text="text" color="error" @click.native="cancel">{{ t('app.cancel') }}</v-btn>
+            <v-btn depressed="depressed" color="info" @click.stop="save" :disabled="!valid" :loading="saving">{{ t('app.save') }}</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-form>
+    </v-dialog>
+  </div>
 </template>
 
-<script>
-import { mapGetters, mapActions } from "vuex"
+<script setup lang="ts">
+import { Category } from '../models/Category';
+import { ref, reactive, computed, onMounted, VueElement } from 'vue'
+import { useStore } from '../store'
+import { useI18n } from 'vue-i18n';
 
-export default {
-  props: {
-    showDialog: {
-      type: Boolean,
-      default: false
-    },
-    categoryId: {
-      type: String,
-      default: null
-    }
-  },
-  data: function() {
-    return {
-      loaded: false,
-      saving: false,
-      valid: true,
-      title: "New Category",
-      model: {},
-      rules: {
-        required: value => !!value || "Required"
-      }
-    }
-  },
-  computed: {
-    ...mapGetters(['categoryById'])
-  },
-  mounted() {
-    if (this.categoryId == null) {
-      this.model = {}
-      this.model.action = "New"
+const { t } = useI18n()
+
+const store = useStore()
+
+const props = defineProps<{
+  showDialog?: boolean
+  categoryId?: string
+}>()
+
+const emit = defineEmits(['hideDialog'])
+
+const form = ref<HTMLFormElement>()
+const saving = ref(false)
+const valid = ref(true)
+const action = ref("New")
+const title = ref("New Category")
+const model = reactive<Category>({
+  _id: undefined,
+  name: '',
+  createdDate: new Date(),
+  updatedDate: new Date()
+})
+
+const rules = computed(() => {
+  const rules = []
+  const rule =
+      (v: string) => !!v || 'Required'
+
+  rules.push(rule)
+  return rules;
+})
+
+const vFocus = {
+  mounted: (el: VueElement) => el.focus()
+}
+
+onMounted(() => {
+  if (props.categoryId == null) {
+    Object.assign(model, {})
+    action.value = "New"
+  } else {
+    Object.assign(model, store.getters.categoryById(props.categoryId))
+    action.value= "Update"
+    title.value = "Update Category"
+  }
+})
+
+const save = () => {
+  if (form.value && form.value.validate()) {
+    saving.value = true
+    model.name = model.name.trim()
+
+    if (action.value === "New") {
+      model.createdDate = new Date()
+      model.updatedDate = new Date()
+      store.dispatch('addCategory', model).then(() => {
+        emit("hideDialog")
+      })
     } else {
-      this.model = Object.assign({}, this.categoryById(this.categoryId))
-      this.model.action = "Update"
-      this.title = "Update Category"
-    }
-
-    this.$refs.name.focus()
-  },
-  methods: {
-    ...mapActions(["addCategory", "updateCategory"]),
-    save() {
-      if (this.$refs.form.validate()) {
-        this.saving = true
-        this.model.name = this.model.name.trim()
-
-        if (this.model.action === "New") {
-          this.model.createdDate = new Date()
-          this.model.updatedDate = new Date()
-          this.addCategory(this.model).then(() => {
-            this.$emit("hideDialog")
-          })
-        } else {
-          this.model.updatedDate = new Date()
-          this.updateCategory(this.model).then(() => {
-            this.$emit("hideDialog")
-          })
-        }
-      }
-    },
-    cancel() {
-      this.$emit("hideDialog")
+      model.updatedDate = new Date()
+      store.dispatch('updateCategory', model).then(() => {
+        emit("hideDialog")
+      })
     }
   }
 }
+
+const cancel = () => {
+  emit("hideDialog")
+}
+
 </script>

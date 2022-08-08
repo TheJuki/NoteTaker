@@ -1,19 +1,22 @@
-<template lang="pug">
-  div
-    v-dialog(v-model="showDialog" max-width="350" :persistent="true")
-      v-card
-        v-card-title.headline {{ title }}
-        v-card-text {{ description }}
-        v-card-actions
-          v-spacer
-          v-btn(:color="btn1.color" v-if="btn1.visible" text @click.native="btn1Event") {{ btn1.text }}
-          v-btn(:color="btn2.color" v-if="btn2.visible" text @click.native="btn2Event") {{ btn2.text }}
+<template>
+  <div>
+    <v-dialog v-model="showDialog" max-width="350" :persistent="true">
+      <v-card>
+        <v-card-title class="headline">{{ title }}</v-card-title>
+        <v-card-text>{{ description }}</v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn :color="btn1.color" v-if="btn1.visible" text="text" @click.native="btn1Event">{{ btn1.text }}</v-btn>
+          <v-btn :color="btn2.color" v-if="btn2.visible" text="text" @click.native="btn2Event">{{ btn2.text }}</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </div>
 </template>
 
-<script>
-export default {
-  props: {
-    showDialog: {
+<script setup lang="ts">
+defineProps({
+  showDialog: {
       type: Boolean,
       default: false
     },
@@ -45,16 +48,17 @@ export default {
         }
       }
     }
-  },
-  methods: {
-   btn1Event () {
-      this.$emit('hideDialog')
-      this.$emit('btn1Event')
-    },
-    btn2Event () {
-      this.$emit('hideDialog')
-      this.$emit('btn2Event')
-    }
-  }
+})
+
+const emit = defineEmits(['hideDialog', 'btn1Event', 'btn2Event'])
+
+const btn1Event = () => {
+  emit('hideDialog')
+  emit('btn1Event')
+}
+
+const btn2Event = () => {
+  emit('hideDialog')
+  emit('btn2Event')
 }
 </script>
